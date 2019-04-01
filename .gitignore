@@ -1,0 +1,26 @@
+﻿# all bin directories
+bin/
+
+# all target directories
+target/
+
+# .settings directories
+.settings/
+
+# .project file
+.project
+
+# .classpath file
+.classpath
+
+# all files ending with ~
+*~
+
+# all .iml files
+*.iml
+
+# .idea folder
+.idea/
+
+# Mac OS hidden files
+.DS_Store
