@@ -109,9 +109,9 @@ public class WordCount {
 
     static void runQuery(DummyOptions options){
         Pipeline p = Pipeline.create(options);
-        String header = "id";
+        /*String header = "id";
         PCollection<String> lines = getLines(p,options);
-        lines.apply(ParDo.of(new FilterCSVHeaderFn(header)));
+        lines.apply(ParDo.of(new FilterCSVHeaderFn(header)));*/
         insertQuery(p,options);
         p.run().waitUntilFinish();
     }

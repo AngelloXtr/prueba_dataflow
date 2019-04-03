@@ -1,23 +1,25 @@
 package com.bbva.dataflow;
 
-import com.bbva.dataflow.entities.DummyClass;
+import com.bbva.dataflow.entities.DummyClassInput;
 import com.bbva.dataflow.entities.QualityPrinciple;
 import com.fga.utils.PropertiesUtil;
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.coders.BigEndianIntegerCoder;
-import org.apache.beam.sdk.coders.KvCoder;
+import org.apache.beam.sdk.coders.DefaultCoder;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.io.jdbc.JdbcIO;
 
 import org.apache.beam.sdk.transforms.*;
+import org.apache.beam.sdk.transforms.display.DisplayData;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.TypeDescriptor;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.ResultSet;
+
+import static com.bbva.constants.ExampleConstants.*;
 
 public class ExampleUtils {
+
     public static final String TOKENIZER_PATTERN = "[^\\p{L}]+";
 
     public static PCollection<String> getLines(Pipeline p, DummyOptions options){
@@ -27,56 +29,57 @@ public class ExampleUtils {
     }
 
 
-    private static class myPreparedStatementSetter implements JdbcIO.PreparedStatementSetter<KV<Integer, Integer>>{
+    private static class myPreparedStatementSetter implements JdbcIO.PreparedStatementSetter<QualityPrinciple>{
         @Override
-        public void setParameters(KV<Integer, Integer> element, PreparedStatement preparedStatement) throws Exception {
-            preparedStatement.setInt(1, element.getKey());
-            preparedStatement.setInt(2, element.getValue());
+        public void setParameters(QualityPrinciple qp, PreparedStatement preparedStatement) throws Exception {
+
+            preparedStatement.setInt(2, qp.id);
+            preparedStatement.setString(3, qp.source);
+            preparedStatement.setString(4, qp.classification);
+            preparedStatement.setString(5, qp.nameEs);
+            preparedStatement.setString(6, qp.descEs);
+            preparedStatement.setString(7, qp.nameEn);
+            preparedStatement.setString(8, qp.descEn);
         }
     }
 
 
-    static class FilterCSVHeaderFn extends DoFn<String, String> {
-        String headerFilter;
 
-        public FilterCSVHeaderFn(String headerFilter) {
-            this.headerFilter = headerFilter;
-        }
+    public static PCollection<QualityPrinciple> returnCollection(Pipeline p){
 
-        @ProcessElement
-        public void processElement(ProcessContext c) {
-            String row = c.element();
-            // Filter out elements that match the header
-            if (!row.equals(this.headerFilter)) {
-                c.output(row);
-            }
-        }
+        QualityPrinciple qp = new QualityPrinciple(1,"asdf","sad",
+                "asdf","as","asd","asdf");
+        PCollection<QualityPrinciple> qps = p.apply(Create.of(qp));
+
+        return  qps;
     }
 
-   /*public static PCollection<QualityPrinciple> mapQualityPrinciples(Pipeline p, DummyOptions options){
-       PCollection<String> lines = getLines(p,options);
+
+    /**
+     * Pipeline to insert data into database
+     * @param p     Pipeline
+     */
+    public static void insertQuery(Pipeline p,PCollection<QualityPrinciple> qualityPrinciples){
 
 
-       PCollection<QualityPrinciple> qualityPrinciples;
 
+        //final KV<String,QualityPrinciple> kv = KV.of("quality_principle",qp);
 
-       return qualityPrinciples;
-   }*/
+        String jdbcUrl = String.format(JDBC_URL,
+                DATABASE, // database name
+                INSTANCE_NAME); // instance name
 
-    public static void insertQuery(Pipeline p, DummyOptions options){
-        final KV<Integer,Integer> kv = KV.of(2,3);
-        String jdbcUrl = String.format(PropertiesUtil.getString("JDBC_SOCKET"),
-                PropertiesUtil.getString("DB_NAME"), // database name
-                PropertiesUtil.getString("INSTANCE_NAME")); // instance name
-
-        p.apply(Create.of(kv))
-                .apply(JdbcIO.<KV<Integer, Integer>>write()
+        //p.apply("CREATE FROM KV",Create.of(kv))
+        qualityPrinciples.apply("INSERT INTO DB",JdbcIO.<QualityPrinciple>write()
                         .withDataSourceConfiguration(JdbcIO.DataSourceConfiguration.create(
-                                PropertiesUtil.getString("DB_DRIVER"), jdbcUrl)
-                                .withUsername(PropertiesUtil.getString("USER_NAME"))
-                                .withPassword(PropertiesUtil.getString("DB_PASS")))
-                .withStatement("INSERT INTO prueba VALUES(?,?)")
+                                DRIVER, jdbcUrl)
+                                .withUsername(USER_DB)
+                                .withPassword(PASS_DB))
+                .withStatement("INSERT INTO ? VALUES(?,?,?,?,?,?,?)")
                 .withPreparedStatementSetter(new myPreparedStatementSetter()));
     }
+
+
+
 
 }

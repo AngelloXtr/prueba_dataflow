@@ -1,9 +1,9 @@
 package com.bbva.dataflow.entities;
 
 
-public class DummyClass{
+public class DummyClassInput{
     public String name;
-    public int    age;
+    public int    id;
 
 }
 
