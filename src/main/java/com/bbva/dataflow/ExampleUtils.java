@@ -32,7 +32,7 @@ public class ExampleUtils {
     private static class myPreparedStatementSetter implements JdbcIO.PreparedStatementSetter<QualityPrinciple>{
         @Override
         public void setParameters(QualityPrinciple qp, PreparedStatement preparedStatement) throws Exception {
-
+            preparedStatement.setString(1,"quality_principle");
             preparedStatement.setInt(2, qp.id);
             preparedStatement.setString(3, qp.source);
             preparedStatement.setString(4, qp.classification);

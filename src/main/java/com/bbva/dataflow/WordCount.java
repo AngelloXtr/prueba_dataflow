@@ -2,6 +2,7 @@ package com.bbva.dataflow;
 
 
 
+import com.bbva.dataflow.entities.QualityPrinciple;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.metrics.Counter;
@@ -112,7 +113,8 @@ public class WordCount {
         /*String header = "id";
         PCollection<String> lines = getLines(p,options);
         lines.apply(ParDo.of(new FilterCSVHeaderFn(header)));*/
-        insertQuery(p,options);
+        PCollection<QualityPrinciple> qps = returnCollection(p);
+        insertQuery(p,qps);
         p.run().waitUntilFinish();
     }
 
