@@ -5,14 +5,18 @@ import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.Validation;
 
-public interface DummyOptions extends PipelineOptions {
+/**
+ * This interface is needed to custom our own options for the pipelines
+ */
+public interface CustomOptions extends PipelineOptions {
 
     /**
-     * By default, this example reads from a public dataset containing the text of King Lear. Set
-     * this option to choose a different input file or glob.
+     * By default, this example reads from the quality principle csv allocated in a private GCS bucket from the project
+     * datio-dataquality-poc.
+     * Set this option to choose a different input file or glob.
      */
     @Description("Path of the file to read from")
-    @Default.String("gs://apache-beam-samples/shakespeare/kinglear.txt")
+    @Default.String("gs://datio-dataquality-poc/example-dataflow/sophia-in/quality_principle.csv")
     @Validation.Required
     String getInputFile();
 
